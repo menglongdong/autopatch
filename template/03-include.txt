@@ -1,0 +1,4 @@
+# 头文件重复包含模板
+module: remove duplicate include in xxx
+
+'xxx' included in 'xxx' is duplicated.

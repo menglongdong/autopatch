@@ -1,0 +1,4 @@
+# template for duplicate include
+module: remove duplicate include in xxx
+
+'xxx' included in 'xxx' is duplicated.

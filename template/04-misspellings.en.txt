@@ -1,0 +1,9 @@
+# template for misspellings
+module: fix misspellings using codespell tool
+
+Some typos are found out by codespell tool:
+
+$ codespell -w -i 3 ./net/sched/
+xxx
+
+Fix typos found by codespell.

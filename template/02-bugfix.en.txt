@@ -1,0 +1,13 @@
+# bug fix template
+#
+# Please fill in the patch title below (similar to the default template)
+
+
+# Please describe the content of the patch below (similar to the default
+# template)
+
+
+# Please complete the submission that introduced the vulnerability below,
+# where shortid is the short submission number (12 characters),
+# subject is the subject of the submission
+Fixes: shortid ("subject")

@@ -1,0 +1,15 @@
+# default template
+#
+# Please enter the patch title (one line) below, which will be sent
+# as the email title. The general title format is:
+# Module: submodule: short description, for example:
+# "net: ipv4: fix a bug in somewhere"
+# If there is no submodule, the submodule can be omitted
+
+# Please fill in the detailed description of the patch below,
+# which aims to explain the problem to be solved by the patch.
+# The more detailed the better. Pay attention to the format,
+# Each line should not exceed 75 characters.
+# The horizontal line below can be used as a benchmark.
+# ------------------------------------------------------------------------
+
