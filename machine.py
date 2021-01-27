@@ -269,6 +269,12 @@ class CommitMachine:
         return n('send_email', (patches, test_email, test_email))
 
     def send_email(self, info):
+        """
+        send email to kernel or test
+        :param info:
+        :return:
+        """
+
         patches, to, cc = info
         cmd = 'git send-email --from %s --to %s --cc %s %s' % (
             git.get_from(), to, cc, ' '.join(patches))
@@ -284,30 +290,52 @@ class CommitMachine:
         return n('restore')
 
     def select_mt(self, patches):
+        """
+        select maintainer the patch send to
+        :param patches: patches to be send
+        :return:
+        """
+
+        # get maintainer from patches
         dialog_wait()
         mt_str = git.git_cmd_str('./scripts/get_maintainer.pl %s' % ' '.join(patches))
-        clear_screen()
         mts = git.mt_parse(mt_str)
+        clear_screen()
         if not mts:
             print(_('commit.no_mt'))
             return self.pause('re_commit')
 
+        # select recipients, default none
         print(_('commit.select_mt'))
-        choices = [(mt['email'], mt['name'], False) for mt in mts]
-        code, recipients = d.checklist(_('commit.select_to'), choices=choices)
-        clear_screen()
+        while True:
+            choices = [(mt['email'], mt['name'], False) for mt in mts]
+            code, recipients = d.checklist(_('commit.select_to'),
+                                           extra_button=True,
+                                           choices=choices,
+                                           extra_label=_('dialog.button_new'))
+            clear_screen()
 
-        if code != d.OK:
-            print(_('commit.no_to'))
-            return self.pause('re_commit')
-        to = ','.join(recipients)
+            if code == d.CANCEL:
+                print(_('commit.no_to'))
+                return self.pause('re_commit')
 
+            # new recipients should be added
+            if code == d.EXTRA:
+                code, msg = d.editbox_str('', title=_('commit.new_mt'))
+                if code != d.OK:
+                    continue
+                mts += [{'email': i, 'name': i} for i in msg.splitlines() if i]
+                continue
+
+            to = ','.join(recipients)
+            break
+
+        # select Cc, default the rest
         choices = [(mt['email'], mt['name'], True)
                    for mt in mts
                    if mt['email'] not in recipients]
         code, ccs = d.checklist(_('commit.select_cc'), choices=choices)
         clear_screen()
-
         if code != d.OK:
             print(_('commit.no_cc'))
             return self.pause('re_commit')
@@ -319,14 +347,10 @@ class CommitMachine:
         code, msg = d.menu(_('commit.send_target'),
                            choices=[('kernel', _('commit.to_kernel')), ('test', _('commit.to_test'))])
         clear_screen()
-
         if code != d.OK:
             return self.pause('re_commit')
 
-        if msg == 'kernel':
-            return n('select_mt', patches)
-
-        return n('send_test', patches)
+        return n('select_mt', patches) if msg == 'kernel' else n('send_test', patches)
 
     def re_commit(self):
         cmd = 'git add ./ && git commit --amend'
@@ -361,7 +385,7 @@ class CommitMachine:
             if code == 0:
                 continue
             code = d.scrollbox('%s\n%s' % (_('commit.checkpatch_err'), msg),
-                               extra_button=True, extra_label='ignore')
+                               extra_button=True, extra_label=_('dialog.button_ignore'))
             clear_screen()
             err = True
             if code == d.OK:
@@ -506,6 +530,7 @@ class CommitMachine:
         if not templates:
             return n()
         choices = [i for i in templates.items()]
+        choices.sort(key=lambda x: x[0])
         code, msg = d.menu(_('commit.select_template'), choices=choices)
         if code != d.OK:
             return n()
@@ -544,7 +569,7 @@ class CommitMachine:
 
         msg = '%s\n%s' % (_('commit.commit'), changes)
         code = d.scrollbox(msg,
-                           extra_button=True, extra_label='cancel')
+                           extra_button=True, extra_label=_('dialog.button_cancel'))
         clear_screen()
         if code != d.OK:
             return n()

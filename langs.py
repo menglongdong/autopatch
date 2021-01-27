@@ -62,7 +62,11 @@ langs = {
         'commit.no_cc': '未选择抄送人，已停止！',
         'commit.select_template': '请选择要使用的模板Select the template you want to use',
         'commit.wait': '请稍等......',
-        'commit.new_group': '找不到组，这将是一个新组'
+        'commit.new_group': '找不到组，这将是一个新组',
+        'commit.new_mt': '新增收件人',
+        'dialog.button_new': '新增',
+        'dialog.button_ignore': '忽略',
+        'dialog.button_cancel': '取消'
     },
     'en': {
         'init.user.intro': 'Check that you are using this tool for the first time, please provide some initialization '
@@ -135,7 +139,11 @@ langs = {
         'commit.no_cc': 'Cc not selected, stopped!',
         'commit.select_template': 'Select the template you want to use',
         'commit.wait': 'Please wait a moment......',
-        'commit.new_group': 'Group not found and this will be a new group'
+        'commit.new_group': 'Group not found and this will be a new group',
+        'commit.new_mt': 'Add recipient',
+        'dialog.button_new': 'NEW',
+        'dialog.button_ignore': 'IGNORE',
+        'dialog.button_cancel': 'CANCEL'
     }
 }
 
