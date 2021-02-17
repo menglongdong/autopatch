@@ -224,12 +224,17 @@ def parse_args():
     return parsed_args
 
 
-init_user()
+new_user = init_user()
 args = parse_args()
+(action, func) = args.action
 
-init_workspace()
+new_workspace = init_workspace()
+
+if action == 'init':
+    not new_user and setup_lang()
+    not new_workspace and setup_kernel()
+
 init_git()
 init_commit()
 
-(action, func) = args.action
 func and func(args, action)

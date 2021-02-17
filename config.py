@@ -51,21 +51,8 @@ def update_wconfig():
         f.close()
 
 
-def init_workspace():
-    if os.path.exists(wconfig_file):
-        with open(wconfig_file) as f:
-            wconfig.update(json.loads(f.read()))
-            f.close()
-            return
-
-    if d.yesno(_('work.init')) != Dialog.OK:
-        clear_screen()
-        exit(0)
-
-    if not os.path.exists(wconfig_dir):
-        os.mkdir(wconfig_dir)
-
-    code, msg = d.editbox_str(work_dir,
+def setup_kernel():
+    code, msg = d.editbox_str(wconfig.get('kernel'),
                               title=_('work.select_kernel'))
     clear_screen()
 
@@ -83,6 +70,38 @@ def init_workspace():
     update_wconfig()
 
 
+def init_workspace():
+    if os.path.exists(wconfig_file):
+        with open(wconfig_file) as f:
+            wconfig.update(json.loads(f.read()))
+            f.close()
+            return False
+
+    if d.yesno(_('work.init')) != Dialog.OK:
+        clear_screen()
+        exit(0)
+
+    if not os.path.exists(wconfig_dir):
+        os.mkdir(wconfig_dir)
+
+    setup_kernel()
+    return True
+
+
+def setup_lang():
+    choices = [('zh-CN', '中文'), ('en', 'English')]
+    code, tags = d.menu('请选择您的语言：', choices=choices)
+    clear_screen()
+
+    if code != d.OK:
+        print('未选择语言，已退出！')
+        exit(0)
+
+    uconfig['lang'] = tags
+    update_uconfig()
+    set_lang(tags)
+
+
 def init_user():
     """
     Init config for user that first use.
@@ -93,22 +112,14 @@ def init_user():
             uconfig.update(json.loads(f.read()))
             f.close()
             set_lang(uconfig['lang'])
-            return
+            return False
 
     print(_('init.user.intro'))
     if not os.path.exists(config_dir):
         os.mkdir(config_dir)
 
-    choices = [('zh-CN', '中文'), ('en', 'English')]
-    code, tags = d.menu('检测到您未设置默认语言，请选择您的语言：', choices=choices)
-    clear_screen()
-
-    if code != d.OK:
-        print('未选择语言，已退出！')
-
-    uconfig['lang'] = tags
-    update_uconfig()
-    set_lang(tags)
+    setup_lang()
+    return True
 
 
 def patch_path(patch=None):
