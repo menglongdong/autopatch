@@ -84,6 +84,13 @@ class Commit:
         return data
 
     @staticmethod
+    def find_patch(patch):
+        for i in Commit.get_commits():
+            if i['patch'] == patch:
+                return i
+        return None
+
+    @staticmethod
     def max_order(group):
         groups = Commit.find_group(group)
         if not groups:
@@ -112,23 +119,12 @@ class Commit:
 
         for i in items:
             patch = patch_path(i['patch'])
-            code, msg = git.git_cmd('git am "%s"' % patch)
-            if code != 0:
-                git.git_cmd('git am --abort')
+            if not git.custom_am(patch):
                 return False
 
         if no_content:
             patch = commit['patch']
-            log = git.get_patch_log(patch_path(patch))
-            if not log:
-                return False
-
-            tmp = NamedTemporaryFile('w+t')
-            tmp.write(log)
-            tmp.flush()
-            git.git_cmd('git commit --allow-empty -F "%s"' % tmp.name)
-            tmp.close()
-            return True
+            return git.custom_am(patch_path(patch), True)
 
         return True
 
@@ -296,6 +292,10 @@ class CommitMachine:
         :return:
         """
 
+        commit = self.commit
+        cc_bk = commit.get('cc') or []
+        to_bk = commit.get('to') or []
+
         # get maintainer from patches
         dialog_wait()
         mt_str = git.git_cmd_str('./scripts/get_maintainer.pl %s' % ' '.join(patches))
@@ -305,10 +305,13 @@ class CommitMachine:
             print(_('commit.no_mt'))
             return self.pause('re_commit')
 
+        mts_email = [i['email'] for i in mts]
+        mts.extend([{'email': i, 'name': i} for i in cc_bk + to_bk if i not in mts_email])
+
         # select recipients, default none
         print(_('commit.select_mt'))
         while True:
-            choices = [(mt['email'], mt['name'], False) for mt in mts]
+            choices = [(mt['email'], mt['name'], mt['email'] in to_bk) for mt in mts]
             code, recipients = d.checklist(_('commit.select_to'),
                                            extra_button=True,
                                            choices=choices,
@@ -341,6 +344,10 @@ class CommitMachine:
             return self.pause('re_commit')
         cc = ','.join(ccs)
 
+        commit['cc'] = ccs
+        commit['to'] = recipients
+        Commit.store_commit()
+
         return n('send_email', (patches, to, cc))
 
     def select_send(self, patches):
@@ -363,7 +370,9 @@ class CommitMachine:
             msg = '%s\n%s' % (_('commit.version').format(version=self.commit['version']), msg)
             tmp.write(msg)
             tmp.flush()
-            cmd = "%s -s --edit -F %s" % (cmd, tmp.name)
+            cmd = "%s --edit -F %s" % (cmd, tmp.name)
+            if not git.current_signed():
+                cmd += ' -s'
 
         p = git.popen(cmd)
         p.communicate()
@@ -513,13 +522,14 @@ class CommitMachine:
 
         return n('review_patch', [patch_path(g['patch']) for g in groups])
 
-    @staticmethod
-    def send_group(group):
+    def send_group(self, group):
         groups = Commit.find_group(group)
         if not groups or len(groups) < 2:
             print('invalid group')
             return n()
-        if not groups[0]['cover']:
+
+        self.commit = groups[0]
+        if not self.commit['cover']:
             return n('make_cover', group)
         return n('review_group', group)
 

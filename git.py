@@ -1,5 +1,6 @@
 import re
 import subprocess
+from tempfile import NamedTemporaryFile
 
 from config import wconfig
 from langs import _
@@ -41,7 +42,7 @@ class GitHelper:
         with open(patch, 'r') as f:
             data = f.read()
             f.close()
-            m = re.search(r'Subject: \[.*?] ([\s\S]*?)---', data)
+            m = re.search(r'Subject: \[.*?] ([\s\S]*)\n---\n ', data)
             if not m:
                 return None
             return m.group(1)
@@ -63,6 +64,28 @@ class GitHelper:
         docstring
         """
         return self.get_email()
+
+    def custom_am(self, patch, no_content=False):
+
+        log = git.get_patch_log(patch)
+        if not log:
+            return False
+
+        tmp = NamedTemporaryFile('w+t')
+        tmp.write(log)
+        tmp.flush()
+        cmd = 'git commit --allow-empty -F "%s"' % tmp.name
+        if not no_content:
+            cmd = 'git apply "%s" && git add ./ && ' % patch + cmd
+        code, msg = self.git_cmd(cmd)
+        tmp.close()
+        if code != 0:
+            return False
+        return True
+
+    def current_signed(self):
+        code, msg = self.git_cmd('git log -1 | grep "Signed-off-by:"')
+        return code == 0
 
     def find_by_title(self, title, auth=None):
         cmd = 'git log -1 --grep="%s"' % title
