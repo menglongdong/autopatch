@@ -66,7 +66,8 @@ langs = {
         'commit.new_mt': '新增收件人',
         'dialog.button_new': '新增',
         'dialog.button_ignore': '忽略',
-        'dialog.button_cancel': '取消'
+        'dialog.button_cancel': '取消',
+        'git.invalid_remote': '当前分支没有绑定远程分支！'
     },
     'en': {
         'init.user.intro': 'Check that you are using this tool for the first time, please provide some initialization '
@@ -143,7 +144,8 @@ langs = {
         'commit.new_mt': 'Add recipient',
         'dialog.button_new': 'NEW',
         'dialog.button_ignore': 'IGNORE',
-        'dialog.button_cancel': 'CANCEL'
+        'dialog.button_cancel': 'CANCEL',
+        'git.invalid_remote': 'current branch has no upstream!'
     }
 }
 

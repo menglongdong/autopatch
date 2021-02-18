@@ -122,16 +122,32 @@ class GitHelper:
 
     def git_dist_clean(self):
         """
-        docstring
+        make current branch consistent with remote
+        :return: True on success, False otherwise
         """
+
         branch = self.get_branch()
         if not branch:
             print(_('git.invalid_branch'))
-            return
+            return False
+        tmp_branch = branch + '_ap_tmp'
 
         upstream = self.git_cmd_str(
             'git rev-parse --abbrev-ref %s@{upstream}' % branch)
-        self.git_cmd('git checkout ./ && git reset --hard %s && git pull' % upstream)
+        if not upstream:
+            print(_('git.invalid_remote'))
+            return False
+
+        code, msg = \
+            self.git_cmd('git checkout ./ && git clean -df && git checkout -b %s && '
+                         'git branch -D %s && git checkout %s -b %s && '
+                         'git branch -D %s && git pull' % (
+                             tmp_branch, branch, upstream, branch, tmp_branch
+                         ))
+        if code != 0:
+            print('ERROR: ' + msg)
+            return False
+        return True
 
     def get_last_msg(self):
         return self.git_cmd_str('git log --format=%B -1')
