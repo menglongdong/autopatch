@@ -52,7 +52,7 @@ def update_wconfig():
 
 
 def setup_kernel():
-    code, msg = d.editbox_str(wconfig.get('kernel'),
+    code, msg = d.editbox_str(wconfig.get('kernel') or '',
                               title=_('work.select_kernel'))
     clear_screen()
 
