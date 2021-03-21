@@ -298,7 +298,7 @@ class CommitMachine:
 
         # get maintainer from patches
         dialog_wait()
-        mt_str = git.git_cmd_str('./scripts/get_maintainer.pl %s' % ' '.join(patches))
+        mt_str = git.git_cmd_str('./scripts/get_maintainer.pl %s' % ' '.join(patches[1:]))
         mts = git.mt_parse(mt_str)
         clear_screen()
         if not mts:
@@ -404,13 +404,16 @@ class CommitMachine:
             d.msgbox(_('commit.checkpatch_ok'))
             clear_screen()
 
-        if self.commit and self.commit['group']:
-            self.pause('re_commit')
+        if self.commit and self.commit['group'] and not self.group:
+            return self.pause('re_commit')
 
         return n('select_send', patches)
 
     def restore(self):
         commit = self.commit
+
+        if git.get_last_title() == commit['title']:
+            return self.pause('re_commit')
 
         if not Commit.restore(commit, self.args.no_content):
             print(_('commit.restore_err'))
@@ -424,9 +427,15 @@ class CommitMachine:
             print(_('commit.not_found'))
             return n()
 
-        v = commit['version']
-        commit['version'] = v + 1
+        new_version = commit['version'] + 1
+        if commit['group']:
+            groups = Commit.find_group(commit['group'])
+            for c in groups:
+                c['version'] = new_version
+        else:
+            commit['version'] = new_version
         self.commit = commit
+
         return n('restore')
 
     @staticmethod
@@ -479,6 +488,7 @@ class CommitMachine:
         first = groups[0]
         count = len(groups)
         self.group = group
+        self.commit = first
 
         cover = first.get('cover')
         tmp_file = NamedTemporaryFile('w+')
@@ -522,16 +532,14 @@ class CommitMachine:
 
         return n('review_patch', [patch_path(g['patch']) for g in groups])
 
-    def send_group(self, group):
+    @staticmethod
+    def send_group(group):
         groups = Commit.find_group(group)
         if not groups or len(groups) < 2:
             print('invalid group')
             return n()
 
-        self.commit = groups[0]
-        if not self.commit['cover']:
-            return n('make_cover', group)
-        return n('review_group', group)
+        return n('make_cover', group)
 
     @staticmethod
     def select_template():
