@@ -35,6 +35,8 @@ class GitHelper:
             'cd %s && %s' % (self.git_path, cmd))
         if code == 0:
             return res
+        
+        print('cmd error: ' + res)
         return None
 
     @staticmethod

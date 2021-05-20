@@ -298,7 +298,8 @@ class CommitMachine:
 
         # get maintainer from patches
         dialog_wait()
-        mt_str = git.git_cmd_str('./scripts/get_maintainer.pl %s' % ' '.join(patches[1:]))
+        patch_str = ' '.join(patches[1:]) if len(patches) > 1 else patches[0]
+        mt_str = git.git_cmd_str('./scripts/get_maintainer.pl %s' % patch_str)
         mts = git.mt_parse(mt_str)
         clear_screen()
         if not mts:
@@ -442,7 +443,7 @@ class CommitMachine:
     def review_patch(patches):
         if d.yesno(_('commit.review')) == d.OK:
             for p in patches:
-                p = git.popen('vim -R %s' % p)
+                p = git.popen('vim %s' % p)
                 p.communicate()
         clear_screen()
         return n('check_patch', patches)
