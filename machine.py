@@ -108,6 +108,10 @@ class Commit:
 
     @staticmethod
     def restore(commit, no_content):
+        title = git.get_last_title()
+        
+        if title == commit['title']:
+            return True
 
         if commit['group']:
             items = [i for i in Commit.find_group(commit['group']) if i['order'] < commit['order']]
@@ -116,6 +120,16 @@ class Commit:
 
         if not no_content:
             items.append(commit)
+
+        first_order = 0
+        for i in range(len(items)):
+            if items[i]['title'] == title:
+                first_order = i + 1
+                break
+        if first_order > 0:
+            items = items[first_order:]
+        if not items:
+            return True
 
         for i in items:
             patch = patch_path(i['patch'])
@@ -361,7 +375,10 @@ class CommitMachine:
         return n('select_mt', patches) if msg == 'kernel' else n('send_test', patches)
 
     def re_commit(self):
-        cmd = 'git add ./ && git commit --amend'
+        if not self.args.no_add:
+            cmd = 'git add ./ && git commit --amend'
+        else:
+            cmd = 'git commit --amend'
         commit = self.commit
         new_version = commit['version'] != 1
         tmp = NamedTemporaryFile('w+t') if new_version else None
@@ -412,9 +429,6 @@ class CommitMachine:
 
     def restore(self):
         commit = self.commit
-
-        if git.get_last_title() == commit['title']:
-            return self.pause('re_commit')
 
         if not Commit.restore(commit, self.args.no_content):
             print(_('commit.restore_err'))
@@ -567,7 +581,8 @@ class CommitMachine:
                     return n()
             order += 1
 
-        git.git_cmd_str('git add ./')
+        if not self.args.no_add:
+            git.git_cmd_str('git add ./')
         p = git.popen('git commit -t %s' % template)
         p.communicate()
 
@@ -581,8 +596,10 @@ class CommitMachine:
 
         return n('store')
 
-    @staticmethod
-    def confirm_commit():
+    def confirm_commit(self):
+        if self.args.no_add:
+            return n('select_template')
+
         dialog_wait()
         changes = git.git_cmd_str('git status --short')
 
