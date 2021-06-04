@@ -156,6 +156,19 @@ class PatchOps:
         key = self.args.do_log_delete
         Commit.delete(key)
 
+    def do_log_export(self):
+        if self.args.group:
+            patches = Commit.find_group(self.args.group)
+        elif self.args.key:
+            patches = [Commit.find_key(self.args.key)]
+        else:
+            patches = Commit.get_commits()
+        Commit.log_export(patches)
+
+    def do_log_import(self):
+        file = './autopatch-export.json'
+        Commit.log_import(file)
+
 
 def parse_args():
     parser = argparse.ArgumentParser(prog='autopatch.py')
@@ -198,7 +211,13 @@ def parse_args():
     log_parser = sub_parser.add_parser('log', help=_('args.log'))
     log_parser.set_defaults(action=('log', PatchOps.dispatch))
     log_parser.add_argument('-g', '--group', help=_('args.log.group'),
-                            dest='do_log_group', metavar='group',
+                            dest='group', metavar='group',
+                            required=False)
+    log_parser.add_argument('-i', '--import', help=_('args.log.group'),
+                            dest='do_log_import', action='store_true',
+                            required=False)
+    log_parser.add_argument('-o', '--export', help=_('args.log.group'),
+                            dest='do_log_export', action='store_true',
                             required=False)
     log_parser.add_argument('-c', '--clear', help=_('args.clear'),
                             action='store_true',
