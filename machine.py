@@ -48,11 +48,10 @@ class Commit:
                 print('newer commit found:%s' % p['title'])
                 continue
             patch = patch_path(p['patch'])
-            if os.path.exists(patch):
-                os.remove(patch)
+            exist_p and Commit.delete(p['key'])
             with open(patch, 'w+') as f:
                 f.write(p.pop('patch_data'))
-            exist_p and Commit.delete(p['key'])
+
             Commit.get_commits().append(p)
             print('import commit:%s' % p['title'])
         Commit.store_commit()
@@ -135,7 +134,9 @@ class Commit:
         if not commit:
             return
         Commit.get_commits().remove(commit)
-        os.remove(patch_path(commit['patch']))
+        patch = patch_path(commit['patch'])
+        if os.path.exists(patch):
+            os.remove(patch)
         Commit.store_commit()
 
     @staticmethod
