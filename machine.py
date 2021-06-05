@@ -1,17 +1,13 @@
+from tempfile import NamedTemporaryFile, TemporaryDirectory
+import json
 import os
 import re
 import uuid
-from datetime import datetime, timedelta
 from shutil import copyfile
-from tempfile import NamedTemporaryFile, TemporaryDirectory
-
-from dialog import Dialog
-
-from config import update_wconfig, wconfig, clear_screen, patch_path, get_templates, get_template, dialog_wait
+from config import *
+from datetime import datetime, timedelta
 from git import git
 from langs import _
-
-d = Dialog(dialog='dialog', autowidgetsize=True)
 
 
 class Commit:
@@ -21,14 +17,49 @@ class Commit:
         return wconfig.setdefault('commits', [])
 
     @staticmethod
+    def log_export(patches):
+        for p in patches:
+            if not p:
+                continue
+            patch = patch_path(p['patch'])
+            if not os.path.exists(patch):
+                continue
+            with open(patch, 'r') as f:
+                p['patch_data'] = f.read()
+            print('export commit:%s' % p['title'])
+        with open('autopatch-export.json', 'w+') as f:
+            f.write(json.dumps(patches, cls=ComplexEncoder))
+
+    @staticmethod
+    def format_commit(commit):
+        commit['create'] = datetime.strptime(
+            commit['create'], '%Y-%m-%d %H:%M:%S')
+        commit['update'] = datetime.strptime(
+            commit['update'], '%Y-%m-%d %H:%M:%S')
+
+    @staticmethod
+    def log_import(path):
+        with open(path, 'r') as f:
+            patches = json.loads(f.read())
+        for p in patches:
+            Commit.format_commit(p)
+            exist_p = Commit.find_key(p['key'])
+            if exist_p and exist_p['update'] > p['update']:
+                print('newer commit found:%s' % p['title'])
+                continue
+            patch = patch_path(p['patch'])
+            exist_p and Commit.delete(p['key'])
+            with open(patch, 'w+') as f:
+                f.write(p.pop('patch_data'))
+
+            Commit.get_commits().append(p)
+            print('import commit:%s' % p['title'])
+        Commit.store_commit()
+
+    @staticmethod
     def init_commits():
         commits = Commit.get_commits()
-        if commits:
-            for c in commits:
-                c['create'] = datetime.strptime(
-                    c['create'], '%Y-%m-%d %H:%M:%S')
-                c['update'] = datetime.strptime(
-                    c['update'], '%Y-%m-%d %H:%M:%S')
+        [Commit.format_commit(c) for c in commits]
 
     @staticmethod
     def last_commit():
@@ -103,18 +134,21 @@ class Commit:
         if not commit:
             return
         Commit.get_commits().remove(commit)
-        os.remove(patch_path(commit['patch']))
+        patch = patch_path(commit['patch'])
+        if os.path.exists(patch):
+            os.remove(patch)
         Commit.store_commit()
 
     @staticmethod
     def restore(commit, no_content):
         title = git.get_last_title()
-        
+
         if title == commit['title']:
             return True
 
         if commit['group']:
-            items = [i for i in Commit.find_group(commit['group']) if i['order'] < commit['order']]
+            items = [i for i in Commit.find_group(
+                commit['group']) if i['order'] < commit['order']]
         else:
             items = []
 
@@ -210,7 +244,8 @@ class Commit:
         git.git_dist_clean()
 
         since = (datetime.now() + timedelta(days=-120)).strftime('%Y-%m-%d')
-        logs = git.git_cmd_str('git log --format=%%s --author="%s" --since="%s"' % (git.get_email(), since))
+        logs = git.git_cmd_str(
+            'git log --format=%%s --author="%s" --since="%s"' % (git.get_email(), since))
         logs = logs.splitlines()
 
         updated = [c for c in commits if c['title'] in logs]
@@ -268,7 +303,8 @@ class CommitMachine:
 
     def send_test(self, patches):
         if 'test_email' not in wconfig:
-            code, msg = d.inputbox(_('commit.test_email'), title=_('commit.test_email_info'), init='')
+            code, msg = d.inputbox(_('commit.test_email'), title=_(
+                'commit.test_email_info'), init='')
             clear_screen()
             if code != d.OK:
                 return self.pause('re_commit')
@@ -321,12 +357,14 @@ class CommitMachine:
             return self.pause('re_commit')
 
         mts_email = [i['email'] for i in mts]
-        mts.extend([{'email': i, 'name': i} for i in cc_bk + to_bk if i not in mts_email])
+        mts.extend([{'email': i, 'name': i}
+                   for i in cc_bk + to_bk if i not in mts_email])
 
         # select recipients, default none
         print(_('commit.select_mt'))
         while True:
-            choices = [(mt['email'], mt['name'], mt['email'] in to_bk) for mt in mts]
+            choices = [(mt['email'], mt['name'], mt['email'] in to_bk)
+                       for mt in mts]
             code, recipients = d.checklist(_('commit.select_to'),
                                            extra_button=True,
                                            choices=choices,
@@ -385,7 +423,8 @@ class CommitMachine:
 
         if new_version:
             msg = git.get_last_msg()
-            msg = '%s\n%s' % (_('commit.version').format(version=self.commit['version']), msg)
+            msg = '%s\n%s' % (_('commit.version').format(
+                version=self.commit['version']), msg)
             tmp.write(msg)
             tmp.flush()
             cmd = "%s --edit -F %s" % (cmd, tmp.name)
@@ -521,7 +560,8 @@ class CommitMachine:
 
         first['cover'] = cover
         tmp = TemporaryDirectory()
-        git.git_cmd_str('git format-patch --cover-letter -s -%d -o %s' % (count, tmp.name))
+        git.git_cmd_str(
+            'git format-patch --cover-letter -s -%d -o %s' % (count, tmp.name))
         tmp_cover_file = os.path.join(tmp.name, '0000-cover-letter.patch')
 
         f = open(tmp_cover_file, 'r')
@@ -592,7 +632,8 @@ class CommitMachine:
             return n()
 
         git.git_cmd_str('git commit -s --amend --no-edit')
-        self.commit = Commit.add_commit(git.get_last_title(), git.get_last_sid(), group, order)
+        self.commit = Commit.add_commit(
+            git.get_last_title(), git.get_last_sid(), group, order)
 
         return n('store')
 
