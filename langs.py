@@ -26,6 +26,7 @@ langs = {
         'args.update': '查询远程分支已更新所有提交状态（是否被采纳）',
         'args.title': '修改提交标题',
         'args.no-add': '不进行git add操作，直接commit',
+        'args.open': '将提交的状态改为re_commit',
 
         'git.invalid_branch': '当前未处于有效分支！',
         'work.init': '当前目录非AutoPatch工作空间，是否将其初始化为工作空间？',
@@ -103,6 +104,7 @@ langs = {
         'args.update': 'Query the remote branch has updated all submission status (whether it has been adopted)',
         'args.title': 'change commit title',
         'args.no-add': 'not git add',
+        'args.open': 'change a log\'s status to re_commit',
 
         'git.invalid_branch': 'Currently not in a valid branch! ',
         'work.init': 'The current directory is not an AutoPatch workspace. Should it be initialized as a workspace? ',

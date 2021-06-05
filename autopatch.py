@@ -108,22 +108,21 @@ class PatchOps:
         Commit.get_commits().clear()
         Commit.store_commit()
 
-    def change_log_attr(self, attr, val):
-        if 'key' not in self.args.__dict__:
-            print('key is necessary!')
-            return
+    def change_log_attr(self, attr, val, key=None):
+        if not key:
+            if 'key' not in self.args.__dict__:
+                print('key is necessary!')
+                return
+            else:
+                key = self.args.key
 
-        commit = Commit.find_key(self.args.key)
+        commit = Commit.find_key(key)
         if not commit:
             print(_('commit.no_continue'))
             return
 
         commit[attr] = val
         Commit.store_commit()
-
-    def do_change_status(self):
-        status = self.args.do_change_status
-        return self.change_log_attr('status', status)
 
     def do_change_title(self):
         title = self.args.do_change_title
@@ -155,6 +154,9 @@ class PatchOps:
     def do_log_delete(self):
         key = self.args.do_log_delete
         Commit.delete(key)
+
+    def do_log_open(self):
+        return self.change_log_attr('status', 're_commit', key=self.args.do_log_open)
 
 
 def parse_args():
@@ -206,18 +208,12 @@ def parse_args():
     log_parser.add_argument('-d', '--delete', help=_('args.delete'),
                             dest='do_log_delete', required=False,
                             metavar='key')
-    log_parser.add_argument('-s', '--status', help=_('args.status'),
-                            dest='do_change_status', required=False,
-                            metavar='status')
-    log_parser.add_argument('-k', '--key', help=_('args.key'),
-                            dest='key', required=False,
-                            metavar='key')
     log_parser.add_argument('-u', '--update', help=_('args.update'),
                             dest='do_log_update', required=False,
-                            action='store_true', )
-    log_parser.add_argument('-t', '--title', help=_('args.title'),
-                            dest='do_change_title', required=False,
-                            metavar='title')
+                            action='store_true')
+    log_parser.add_argument('-o', '--open', help=_('args.open'),
+                            dest='do_log_open', required=False,
+                            metavar='key')
 
     parsed_args = parser.parse_args()
     if not parsed_args.__dict__:
