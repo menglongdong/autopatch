@@ -215,6 +215,9 @@ def parse_args():
     log_parser.add_argument('-g', '--group', help=_('args.log.group'),
                             dest='group', metavar='group',
                             required=False)
+    log_parser.add_argument('-k', '--key', help=_('args.key'),
+                            dest='key', metavar='key',
+                            required=False)
     log_parser.add_argument('-i', '--import', help=_('args.log.group'),
                             dest='do_log_import', action='store_true',
                             required=False)
@@ -230,7 +233,7 @@ def parse_args():
     log_parser.add_argument('-u', '--update', help=_('args.update'),
                             dest='do_log_update', required=False,
                             action='store_true')
-    log_parser.add_argument('-o', '--open', help=_('args.open'),
+    log_parser.add_argument('--open', help=_('args.open'),
                             dest='do_log_open', required=False,
                             metavar='key')
 

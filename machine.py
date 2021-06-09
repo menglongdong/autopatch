@@ -162,8 +162,6 @@ class Commit:
                 break
         if first_order > 0:
             items = items[first_order:]
-        if not items:
-            return True
 
         for i in items:
             patch = patch_path(i['patch'])
