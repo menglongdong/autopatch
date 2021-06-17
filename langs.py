@@ -19,14 +19,18 @@ langs = {
         'args.send-group': '将指定分组的补丁作为系列补丁进行发送',
 
         'args.log.group': '查找特定分组的记录',
+        'args.log.import': '将autopatch-export.json中的数据导入到当前仓库',
+        'args.log.export': '将指定的提交数据导出到文件autopatch-export.json',
         'args.clear': '删除所有的log记录',
         'args.delete': '删除指定的提交记录',
         'args.status': '手动为提交设置状态，与--key配合使用',
         'args.key': '提交的key值',
-        'args.update': '查询远程分支已更新所有提交状态（是否被采纳）',
+        'args.update': '查询远程分支以更新所有提交状态（是否被采纳）',
         'args.title': '修改提交标题',
         'args.no-add': '不进行git add操作，直接commit',
         'args.open': '将提交的状态改为re_commit',
+
+        'args.send': '进行补丁的发送',
 
         'git.invalid_branch': '当前未处于有效分支！',
         'work.init': '当前目录非AutoPatch工作空间，是否将其初始化为工作空间？',
@@ -97,6 +101,8 @@ langs = {
         'args.send-group': 'Send the patch of the specified group as a series of patches',
 
         'args.log.group': 'Find records in a specific group',
+        'args.log.import': 'import commit from autopatch-export.json',
+        'args.log.export': 'export commit to autopatch-export.json',
         'args.clear': 'Delete all log records',
         'args.delete': 'Delete the specified submission record',
         'args.status': 'Manually set the status for submission, used in conjunction with --key',
@@ -105,6 +111,8 @@ langs = {
         'args.title': 'change commit title',
         'args.no-add': 'not git add',
         'args.open': 'change a log\'s status to re_commit',
+
+        'args.send': 'send the patches',
 
         'git.invalid_branch': 'Currently not in a valid branch! ',
         'work.init': 'The current directory is not an AutoPatch workspace. Should it be initialized as a workspace? ',

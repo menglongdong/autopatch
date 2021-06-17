@@ -47,7 +47,8 @@ class PatchOps:
 
         def_ops = {
             'commit': ops.do_commit,
-            'log': ops.do_log
+            'log': ops.do_log,
+            'send': ops.do_send,
         }
         def_ops[m]()
 
@@ -128,12 +129,6 @@ class PatchOps:
         title = self.args.do_change_title
         return self.change_log_attr('title', title)
 
-    def do_send_group(self):
-        group = self.args.do_send_group
-        m = CommitMachine(self.args)
-        m.set_start('make_cover')
-        m.run(group)
-
     @staticmethod
     def do_log_update():
         Commit.update_log()
@@ -170,6 +165,33 @@ class PatchOps:
     def do_log_import(self):
         file = './autopatch-export.json'
         Commit.log_import(file)
+    
+    def do_send_group(self, group):
+        m = CommitMachine(self.args)
+        m.set_start('make_cover')
+        m.run(group)
+
+    def do_send_key(self, key):
+        m = CommitMachine(self.args)
+
+        if not m.get_commit():
+            print('key not found!')
+            exit(1)
+
+        m.isolate = True
+        m.set_start('set_tag')
+        m.run()
+
+    def do_send(self):
+        group = self.args.group
+        key = self.args.key
+        if not key and not group:
+            print(_('send.no_commit'))
+            exit(1)
+        if key:
+            self.do_send_key(key)
+        else:
+            self.do_send_group(group)
 
 
 def parse_args():
@@ -185,19 +207,7 @@ def parse_args():
     commit_parser.add_argument('-c', '--continue', help=_('args.continue'),
                                action='store_true', dest='do_continue',
                                required=False)
-    commit_parser.add_argument('-n', '--new', help=_('args.new'),
-                               dest='do_new_version', metavar='key',
-                               required=False)
-    commit_parser.add_argument('-r', '--restore', help=_('args.restore'),
-                               dest='do_restore', metavar='key',
-                               required=False)
-    commit_parser.add_argument('--clone', help=_('args.clone'),
-                               dest='do_clone', metavar='key',
-                               required=False)
-    commit_parser.add_argument('--no-content', help=_('args.no-content'),
-                               dest='no_content', action='store_true',
-                               required=False)
-    commit_parser.add_argument('--group', help=_('args.group'),
+    commit_parser.add_argument('-g', '--group', help=_('args.group'),
                                dest='group', metavar='group',
                                required=False)
     commit_parser.add_argument('--send-group', help=_('args.send-group'),
@@ -206,6 +216,15 @@ def parse_args():
     commit_parser.add_argument('--no-add', help=_('args.no-add'),
                                dest='no_add', action='store_true',
                                required=False)
+
+    send_parser = sub_parser.add_parser('send', help=_('args.send'))
+    send_parser.set_defaults(action=('send', PatchOps.dispatch))
+    send_parser.add_argument('-k', '--key', help=_('args.key'),
+                             dest='key', metavar='key',
+                             required=False)
+    send_parser.add_argument('-g', '--group', help=_('args.log.group'),
+                             dest='group', metavar='group',
+                             required=False)
 
     init_parser = sub_parser.add_parser('init', help=_('args.init'))
     init_parser.set_defaults(action=('init', None))
@@ -218,10 +237,10 @@ def parse_args():
     log_parser.add_argument('-k', '--key', help=_('args.key'),
                             dest='key', metavar='key',
                             required=False)
-    log_parser.add_argument('-i', '--import', help=_('args.log.group'),
+    log_parser.add_argument('-i', '--import', help=_('args.log.import'),
                             dest='do_log_import', action='store_true',
                             required=False)
-    log_parser.add_argument('-o', '--export', help=_('args.log.group'),
+    log_parser.add_argument('-o', '--export', help=_('args.log.export'),
                             dest='do_log_export', action='store_true',
                             required=False)
     log_parser.add_argument('-c', '--clear', help=_('args.clear'),
@@ -236,6 +255,18 @@ def parse_args():
     log_parser.add_argument('--open', help=_('args.open'),
                             dest='do_log_open', required=False,
                             metavar='key')
+    log_parser.add_argument('-r', '--restore', help=_('args.restore'),
+                            dest='do_restore', metavar='key',
+                            required=False)
+    log_parser.add_argument('--no-content', help=_('args.no-content'),
+                            dest='no_content', action='store_true',
+                            required=False)
+    log_parser.add_argument('--clone', help=_('args.clone'),
+                            dest='do_clone', metavar='key',
+                            required=False)
+    log_parser.add_argument('-n', '--new', help=_('args.new'),
+                            dest='do_new_version', metavar='key',
+                            required=False)
 
     parsed_args = parser.parse_args()
     if not parsed_args.__dict__:

@@ -69,7 +69,7 @@ class Commit:
         return None
 
     @staticmethod
-    def add_commit(title, key, group=0, order=0):
+    def add_commit(title, key, group='', order=0):
         commits = Commit.get_commits()
         commit = {
             "title": title,
@@ -267,6 +267,7 @@ class CommitMachine:
         self.commit = None
         self.args = args
         self.start_state = None
+        self.isolate = False
 
     def set_start(self, start):
         self.start_state = start
@@ -328,6 +329,13 @@ class CommitMachine:
         if p.returncode != 0:
             return self.pause('re_commit')
         return n('finish')
+
+    def get_commit(self):
+        if self.commit:
+            return self.commit
+        if self.args.key:
+            self.commit = Commit.find_key(self.args.key)
+        return self.commit
 
     def clone(self):
         self.commit = Commit.clone(self.commit, uuid.uuid4().hex[:12])
@@ -459,7 +467,7 @@ class CommitMachine:
             d.msgbox(_('commit.checkpatch_ok'))
             clear_screen()
 
-        if self.commit and self.commit['group'] and not self.group:
+        if self.commit and self.commit['group'] and not self.group and not self.isolate:
             return self.pause('re_commit')
 
         return n('select_send', patches)
@@ -500,13 +508,13 @@ class CommitMachine:
         return n('check_patch', patches)
 
     def set_tag(self):
-        commit = self.commit
+        commit = self.get_commit()
         patch = patch_path(commit['patch'])
         tag = commit.get('tag') or ''
         group = commit['group']
         group_count = 1
 
-        if group:
+        if group and not self.isolate:
             group_count = len(Commit.find_group(group))
 
         code, tag = d.inputbox('tag, such as net-next, bpf-next', init=tag)
