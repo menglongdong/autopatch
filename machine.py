@@ -26,6 +26,7 @@ class Commit:
                 continue
             with open(patch, 'r') as f:
                 p['patch_data'] = f.read()
+
             print('export commit:%s' % p['title'])
         with open('autopatch-export.json', 'w+') as f:
             f.write(json.dumps(patches, cls=ComplexEncoder))
@@ -362,9 +363,11 @@ class CommitMachine:
             print(_('commit.no_mt'))
             return self.pause('re_commit')
 
-        mts_email = [i['email'] for i in mts]
+        mts_set = set([i['email'] for i in mts])
+
         mts.extend([{'email': i, 'name': i}
-                   for i in cc_bk + to_bk if i not in mts_email])
+                   for i in cc_bk + to_bk if i not in mts_set])
+        mts_set = mts_set.union(set(cc_bk + to_bk))
 
         # select recipients, default none
         print(_('commit.select_mt'))
@@ -386,14 +389,15 @@ class CommitMachine:
                 code, msg = d.editbox_str('', title=_('commit.new_mt'))
                 if code != d.OK:
                     continue
-                mts += [{'email': i, 'name': i} for i in msg.splitlines() if i]
+                mts += [{'email': i, 'name': i}
+                        for i in msg.splitlines() if i and i not in mts_set]
                 continue
 
             to = ','.join(recipients)
             break
 
         # select Cc, default the rest
-        choices = [(mt['email'], mt['name'], True)
+        choices = [(mt['email'], mt['name'], not cc_bk or mt['email'] in cc_bk)
                    for mt in mts
                    if mt['email'] not in recipients]
         code, ccs = d.checklist(_('commit.select_cc'), choices=choices)
