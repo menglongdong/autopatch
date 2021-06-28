@@ -15,7 +15,7 @@ langs = {
         'args.new': '为指定提交创建一个新版本',
         'args.restore': '恢复指定提交到当前内核仓库，加参数--no-content会只恢复log记录而丢弃具体的提交内容',
         'args.no-content': '指定该参数时，restore和clone都将丢弃具体的提交内容',
-        'args.group': '指定要提交到的分组，同一个分组的提交会作为一个系列补丁，使用--send-group来进行发送',
+        'args.group': '指定要提交到的分组，同一个分组的提交会作为一个系列补丁，使用send -g <group>来进行发送',
         'args.send-group': '将指定分组的补丁作为系列补丁进行发送',
 
         'args.log.group': '查找特定分组的记录',

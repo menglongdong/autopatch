@@ -30,18 +30,19 @@ sudo yum install dialog, git, git-email
 You can simply use `autopatch -h` to see the usage:
 ```shell
 autopatch -h
-usage: autopatch.py [-h] {commit,init,log} ...
+usage: autopatch.py [-h] {commit,send,init,log} ...
 
 optional arguments:
-  -h, --help         show this help message and exit
+  -h, --help            show this help message and exit
 
 subcommands:
   How to use each parameter
 
-  {commit,init,log}
-    commit           Submit patch
-    init             Initialize the current directory as a workspace
-    log              View log
+  {commit,send,init,log}
+    commit              Submit patch
+    send                send the patches
+    init                Initialize the current directory as a workspace
+    log                 View log
 ```
 
 ### Kernel Prepare

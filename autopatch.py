@@ -210,9 +210,6 @@ def parse_args():
     commit_parser.add_argument('-g', '--group', help=_('args.group'),
                                dest='group', metavar='group',
                                required=False)
-    commit_parser.add_argument('--send-group', help=_('args.send-group'),
-                               dest='do_send_group', metavar='group',
-                               required=False)
     commit_parser.add_argument('--no-add', help=_('args.no-add'),
                                dest='no_add', action='store_true',
                                required=False)
