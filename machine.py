@@ -187,8 +187,8 @@ class Commit:
         patch = patch_path(commit['patch'])
         version = commit['version']
         order = commit['order']
-        meta = commit['meta']
-        tag = meta['tag']
+        meta = commit.get('meta', {})
+        tag = meta.get('tag', '') or commit['tag']
         subject = 'PATCH'
 
         if version != 1:
