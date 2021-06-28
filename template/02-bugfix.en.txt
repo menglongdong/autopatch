@@ -10,4 +10,5 @@
 # Please complete the submission that introduced the vulnerability below,
 # where shortid is the short submission number (12 characters),
 # subject is the subject of the submission
+# Attention: No blank line after Fixes
 Fixes: shortid ("subject")

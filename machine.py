@@ -9,6 +9,13 @@ from datetime import datetime, timedelta
 from git import git
 from langs import _
 
+meta_info = {
+    'tag': 'Tag',
+    'by-report': 'Reported-by',
+    'by-test': 'Tested-by',
+    'by-ack': 'Acked-by'
+}
+
 
 class Commit:
 
@@ -180,7 +187,8 @@ class Commit:
         patch = patch_path(commit['patch'])
         version = commit['version']
         order = commit['order']
-        tag = commit['tag']
+        meta = commit['meta']
+        tag = meta['tag']
         subject = 'PATCH'
 
         if version != 1:
@@ -194,13 +202,24 @@ class Commit:
             return False
         subject = 'Subject: [%s]' % subject
 
+        by_info = ['%s: %s' % (meta_info[k], v)
+                   for (k, v) in meta.items() if k.startswith('by-') and v]
+        by_info = by_info and '\n'.join(by_info)
+
         with open(patch, 'r') as f:
             data = f.read()
-            data = re.sub(r'Subject: \[PATCH.*?]', subject, data)
             f.close()
 
+        data = re.sub(r'Subject: \[PATCH.*?]', subject, data)
+        data_lines = data.splitlines(True)
+
+        for i in range(len(data_lines)):
+            if data_lines[i].startswith('Signed-off-by'):
+                sign_line = i
+        by_info and data_lines.insert(sign_line, by_info + '\n')
+
         with open(patch, 'w') as f:
-            f.write(data)
+            f.write(''.join(data_lines))
             f.close()
 
         return True
@@ -514,19 +533,36 @@ class CommitMachine:
     def set_tag(self):
         commit = self.get_commit()
         patch = patch_path(commit['patch'])
-        tag = commit.get('tag') or ''
         group = commit['group']
         group_count = 1
 
         if group and not self.isolate:
             group_count = len(Commit.find_group(group))
 
-        code, tag = d.inputbox('tag, such as net-next, bpf-next', init=tag)
+        form = []
+        commit.setdefault('meta', {'tag': commit.get('tag', '')})
+        i = 0
+        for (key, val) in meta_info.items():
+            i += 1
+            form.append((val, i, 1,
+                        commit['meta'].get(key, ''), i, 15, 20, 40))
+
+        code, results = d.form('''Meta info about this patch.
+        Tag: tag, such as net-next, bpf-next
+        Reported-by: reporter of this bug if any, such as:
+                     Sample <sample@xx.com>
+        Tested-by:   if this patch is tested by someone
+        Acked-by:    if this patch is acked by someone
+        ''', form)
+
         clear_screen()
         if code != d.OK:
             return self.pause('set_tag')
 
-        commit['tag'] = tag
+        i = 0
+        for (key, val) in meta_info.items():
+            commit['meta'][key] = results[i]
+            i += 1
         Commit.format_patch(commit, group_count)
 
         return n('review_patch', [patch])
