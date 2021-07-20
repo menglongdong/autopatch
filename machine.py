@@ -341,8 +341,10 @@ class CommitMachine:
         """
 
         patches, to, cc = info
-        cmd = 'git send-email --from %s --to %s --cc %s %s' % (
-            git.get_from(), to, cc, ' '.join(patches))
+        cmd = 'git send-email --from %s --to %s %s %s' % (
+            git.get_from(), to, 
+            ('--cc %s' % cc) if cc else '', 
+            ' '.join(patches))
         p = git.popen(cmd)
         p.communicate()
 
@@ -399,10 +401,6 @@ class CommitMachine:
                                            extra_label=_('dialog.button_new'))
             clear_screen()
 
-            if code == d.CANCEL:
-                print(_('commit.no_to'))
-                return self.pause('re_commit')
-
             # new recipients should be added
             if code == d.EXTRA:
                 code, msg = d.editbox_str('', title=_('commit.new_mt'))
@@ -412,6 +410,10 @@ class CommitMachine:
                         for i in msg.splitlines() if i and i not in mts_set]
                 continue
 
+            if code == d.CANCEL or not recipients:
+                print(_('commit.no_to'))
+                return self.pause('re_commit')
+
             to = ','.join(recipients)
             break
 
@@ -419,14 +421,17 @@ class CommitMachine:
         choices = [(mt['email'], mt['name'], not cc_bk or mt['email'] in cc_bk)
                    for mt in mts
                    if mt['email'] not in recipients]
-        code, ccs = d.checklist(_('commit.select_cc'), choices=choices)
-        clear_screen()
-        if code != d.OK:
-            print(_('commit.no_cc'))
-            return self.pause('re_commit')
-        cc = ','.join(ccs)
+        if choices:
+            code, ccs = d.checklist(_('commit.select_cc'), choices=choices)
+            clear_screen()
+            if code != d.OK:
+                print(_('commit.no_cc'))
+                return self.pause('re_commit')
+            cc = ','.join(ccs)
+            commit['cc'] = ccs
+        else:
+            cc = ''
 
-        commit['cc'] = ccs
         commit['to'] = recipients
         Commit.store_commit()
 
