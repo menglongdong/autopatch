@@ -66,7 +66,7 @@ langs = {
         'commit.restore_err': '恢复提交异常！',
         'commit.select_cc': '请选择补丁抄送人',
         'commit.no_cc': '未选择抄送人，已停止！',
-        'commit.select_template': '请选择要使用的模板Select the template you want to use',
+        'commit.select_template': '请选择要使用的模板',
         'commit.wait': '请稍等......',
         'commit.new_group': '找不到组，这将是一个新组',
         'commit.new_mt': '新增收件人',
