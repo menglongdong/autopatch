@@ -49,7 +49,7 @@ langs = {
         'commit.no_commit': '提交信息不完整，已停止！',
         'commit.commit': '下面的修改将被提交：',
         'commit.confirm': '确认提交？y/n[y]:',
-        'commit.select_to': '请选择收件人',
+        'commit.select_to': '请选择收件人（不要全选）',
         'commit.no_mt': '找不到维护者，已停止！',
         'commit.checkpatch_ok': '补丁无格式问题，可以放心发送啦！',
         'commit.version': '''# 当前补丁版本为：{version}，请将版本变更信息写到末尾，
@@ -133,7 +133,7 @@ langs = {
         'commit.no_commit': 'The submission information is incomplete and has been stopped! ',
         'commit.commit': 'The following changes will be submitted:',
         'commit.confirm': 'Confirm to submit? y/n[y]:',
-        'commit.select_to': 'Please select the recipient',
+        'commit.select_to': 'Please select the recipient(don\'t select all)',
         'commit.no_mt': 'Cannot find maintainer, stopped! ',
         'commit.checkpatch_ok': 'The patch has no format problem, you can send it with confidence! ',
         'commit.version': '''# The current patch version is: {version}, please write the version
