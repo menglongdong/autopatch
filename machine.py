@@ -342,9 +342,10 @@ class CommitMachine:
 
         patches, to, cc = info
         cmd = 'git send-email --from %s --to %s %s %s' % (
-            git.get_from(), to, 
-            ('--cc %s' % cc) if cc else '', 
+            git.get_from(), to,
+            ('--cc %s' % cc) if cc else '',
             ' '.join(patches))
+        print('%s %s' % (_('commit.send_cmd'), cmd))
         p = git.popen(cmd)
         p.communicate()
 
