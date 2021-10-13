@@ -61,6 +61,7 @@ git config sendemail.smtpServer smtp.gmail.com
 git config sendemail.smtpServerPort 587
 git config sendemail.smtpUser your.email@gmail.com
 git config sendemail.smtpPass <your password>
+git config sendemail.smtpEncryption tls
 ```
 
 ### workspace

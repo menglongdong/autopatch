@@ -64,6 +64,7 @@ git config sendemail.smtpServer smtp.gmail.com
 git config sendemail.smtpServerPort 587
 git config sendemail.smtpUser your.email@gmail.com
 git config sendemail.smtpPass <your password>
+git config sendemail.smtpEncryption tls
 ```
 **注意**：请确保所使用的的邮箱开启了SMTP服务。
 
