@@ -165,7 +165,7 @@ class PatchOps:
     def do_log_import(self):
         file = './autopatch-export.json'
         Commit.log_import(file)
-    
+
     def do_send_group(self, group):
         m = CommitMachine(self.args)
         m.set_start('make_cover')
@@ -193,6 +193,11 @@ class PatchOps:
         else:
             self.do_send_group(group)
 
+    def do_patch(self):
+        m = CommitMachine(self.args)
+        m.set_start('import_patch')
+        m.run()
+
 
 def parse_args():
     parser = argparse.ArgumentParser(prog='autopatch.py')
@@ -213,6 +218,8 @@ def parse_args():
     commit_parser.add_argument('--no-add', help=_('args.no-add'),
                                dest='no_add', action='store_true',
                                required=False)
+    commit_parser.add_argument('--patch', help=_('args.import-patch'),
+                               dest='do_patch', required=False, metavar='patch')
 
     send_parser = sub_parser.add_parser('send', help=_('args.send'))
     send_parser.set_defaults(action=('send', PatchOps.dispatch))

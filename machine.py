@@ -276,6 +276,17 @@ class Commit:
         print('update finished, following commits updated:')
         print('\n'.join(updated)) if updated else print('None')
 
+    @staticmethod
+    def get_next_order(group):
+        order = 0
+        if group:
+            order = Commit.max_order(group)
+            if not order:
+                if d.yesno(_('commit.new_group')) != d.OK:
+                    return n()
+            order += 1
+        return order
+
 
 def init_commit():
     Commit.init_commits()
@@ -665,14 +676,6 @@ class CommitMachine:
 
     def do_commit(self, template):
         group = self.args.group or 0
-        order = 0
-        if group:
-            order = Commit.max_order(group)
-            if not order:
-                if d.yesno(_('commit.new_group')) != d.OK:
-                    return n()
-            order += 1
-
         if not self.args.no_add:
             git.git_cmd_str('git add ./')
         p = git.popen('git commit -t %s' % template)
@@ -685,8 +688,22 @@ class CommitMachine:
 
         git.git_cmd_str('git commit -s --amend --no-edit')
         self.commit = Commit.add_commit(
-            git.get_last_title(), git.get_last_sid(), group, order)
+            git.get_last_title(), git.get_last_sid(), group, Commit.get_next_order(group))
 
+        return n('store')
+
+    def import_patch(self):
+        patch = self.args.do_patch
+        group = self.args.group or 0
+        if not git.custom_am(patch):
+            print(_('commit.import_fail'))
+            return n()
+
+        p = git.popen('git commit -s --amend')
+        p.communicate()
+        commit = Commit.add_commit(
+            git.get_last_title(), git.get_last_sid(), group, Commit.get_next_order(group))
+        self.commit = commit
         return n('store')
 
     def confirm_commit(self):

@@ -1,4 +1,5 @@
 import re
+import os
 import subprocess
 from tempfile import NamedTemporaryFile
 
@@ -69,6 +70,7 @@ class GitHelper:
 
     def custom_am(self, patch, no_content=False):
 
+        patch = os.path.abspath(patch)
         log = git.get_patch_log(patch)
         if not log:
             return False

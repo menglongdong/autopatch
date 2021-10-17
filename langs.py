@@ -17,6 +17,7 @@ langs = {
         'args.no-content': '指定该参数时，restore和clone都将丢弃具体的提交内容',
         'args.group': '指定要提交到的分组，同一个分组的提交会作为一个系列补丁，使用send -g <group>来进行发送',
         'args.send-group': '将指定分组的补丁作为系列补丁进行发送',
+        'args.import-patch': '根据现有patch文件，导入到工作空间',
 
         'args.log.group': '查找特定分组的记录',
         'args.log.import': '将autopatch-export.json中的数据导入到当前仓库',
@@ -71,6 +72,7 @@ langs = {
         'commit.new_group': '找不到组，这将是一个新组',
         'commit.new_mt': '新增收件人',
         'commit.send_cmd': '开始发送补丁，补丁发送命令为：',
+        'commit.import_fail': '导入失败！',
         'dialog.button_new': '新增',
         'dialog.button_ignore': '忽略',
         'dialog.button_cancel': '取消',
@@ -112,6 +114,7 @@ langs = {
         'args.title': 'change commit title',
         'args.no-add': 'not git add',
         'args.open': 'change a log\'s status to re_commit',
+        'args.import-patch': 'import patch into current workspace',
 
         'args.send': 'send the patches',
 
@@ -156,6 +159,7 @@ langs = {
         'commit.new_group': 'Group not found and this will be a new group',
         'commit.new_mt': 'Add recipient',
         'commit.send_cmd': 'begin to send patch, origin command',
+        'commit.import_fail': 'failed to import patch!',
         'dialog.button_new': 'NEW',
         'dialog.button_ignore': 'IGNORE',
         'dialog.button_cancel': 'CANCEL',
